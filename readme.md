@@ -1,9 +1,6 @@
-# aggregate-error
+# augmented-error
 
-> Create an error from multiple errors
-
-*Note: With [Node.js 15](https://medium.com/@nodejs/node-js-v15-0-0-is-here-deb00750f278), there's now a built-in [`AggregateError`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/AggregateError) type.*
-
+Re-throw an error and preserve the original stack trace.
 
 ## Install
 
@@ -15,37 +12,43 @@ $ npm install aggregate-error
 ## Usage
 
 ```js
-const AggregateError = require('aggregate-error');
+const AugmentedError = require('augmented-error');
+const fs = require('fs');
 
-const error = new AggregateError([new Error('foo'), 'bar', {message: 'baz'}]);
-
-throw error;
-/*
-AggregateError:
-    Error: foo
-        at Object.<anonymous> (/Users/sindresorhus/dev/aggregate-error/example.js:3:33)
-    Error: bar
-        at Object.<anonymous> (/Users/sindresorhus/dev/aggregate-error/example.js:3:13)
-    Error: baz
-        at Object.<anonymous> (/Users/sindresorhus/dev/aggregate-error/example.js:3:13)
-    at AggregateError (/Users/sindresorhus/dev/aggregate-error/index.js:19:3)
-    at Object.<anonymous> (/Users/sindresorhus/dev/aggregate-error/example.js:3:13)
-    at Module._compile (module.js:556:32)
-    at Object.Module._extensions..js (module.js:565:10)
-    at Module.load (module.js:473:32)
-    at tryModuleLoad (module.js:432:12)
-    at Function.Module._load (module.js:424:3)
-    at Module.runMain (module.js:590:10)
-    at run (bootstrap_node.js:394:7)
-    at startup (bootstrap_node.js:149:9)
-*/
-
-for (const individualError of error) {
-	console.log(individualError);
+try {
+  config = fs.readFileSync('/home/mark/app/config.yaml', 'utf8');
+} catch (e) {
+  throw new AugmentedError("Could not read config file - ensure this file exists!", e);
 }
-//=> [Error: foo]
-//=> [Error: bar]
-//=> [Error: baz]
+/*
+AugmentedError:
+    Error: Could not read config file - ensure this file exists!
+        at Array.map (<anonymous>)
+        at Object.<anonymous> (/Users/markl/mess/dsfs/test3.js:9:9)
+        at Module._compile (node:internal/modules/cjs/loader:1108:14)
+        at Object.Module._extensions..js (node:internal/modules/cjs/loader:1137:10)
+        at Module.load (node:internal/modules/cjs/loader:973:32)
+        at Function.Module._load (node:internal/modules/cjs/loader:813:14)
+        at Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:76:12)
+        at node:internal/main/run_main_module:17:47
+    Error: ENOENT: no such file or directory, open '/home/mark/app/config.yaml'
+        at Object.openSync (node:fs:495:3)
+        at readFileSync (node:fs:396:35)
+        at Object.<anonymous> (/Users/markl/mess/dsfs/test3.js:7:12)
+        at Module._compile (node:internal/modules/cjs/loader:1108:14)
+        at Object.Module._extensions..js (node:internal/modules/cjs/loader:1137:10)
+        at Module.load (node:internal/modules/cjs/loader:973:32)
+        at Function.Module._load (node:internal/modules/cjs/loader:813:14)
+        at Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:76:12)
+        at node:internal/main/run_main_module:17:47
+    at Object.<anonymous> (/Users/markl/mess/dsfs/test3.js:9:9)
+    at Module._compile (node:internal/modules/cjs/loader:1108:14)
+    at Object.Module._extensions..js (node:internal/modules/cjs/loader:1137:10)
+    at Module.load (node:internal/modules/cjs/loader:973:32)
+    at Function.Module._load (node:internal/modules/cjs/loader:813:14)
+    at Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:76:12)
+    at node:internal/main/run_main_module:17:47
+*/
 ```
 
 
